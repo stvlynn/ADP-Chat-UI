@@ -7,6 +7,8 @@ import eventHub from '../../../manage/utils/EventHub';
 import { scrollToBottom } from '../../../utils/util';
 import ReferenceComponent from './ReferenceComponent';
 import TokensBoardBrief from './TokensBoardBrief';
+import MarkdownRenderer from './MarkdownRenderer';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 interface Message {
   record_id?: string;
@@ -120,50 +122,57 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
        (Number(item.timestamp) - Number(msgList[index - 1].timestamp)) > 300);
 
     return (
-      <div key={index} className="qa-item">
+      <div key={index} className="message-container">
         {showTimestamp && (
-          <div className="timestamp">
+          <div className="message-timestamp">
             {formatTimestamp(item.timestamp)}
           </div>
         )}
         
         {item.is_from_self ? (
-          <div className="question-item">
-            {item.is_loading && <div className="loading-indicator"></div>}
-            <div 
-              className="question-text" 
-              dangerouslySetInnerHTML={{ __html: item.content }}
-            />
+          <div className="message-user">
+            <div className="message-user-content">
+              {item.is_loading && (
+                <div className="loading-message">
+                  <LoadingSpinner size="20" speed="1.0" className="inline" />
+                  <span>发送中...</span>
+                </div>
+              )}
+              <MarkdownRenderer content={item.content} />
+            </div>
           </div>
         ) : (
-          <div className="answer-item">
-            <div className="answer-avatar">
-              <img 
-                className="robot-avatar" 
-                src={item.from_avatar || 'https://qbot-1251316161.cos.ap-nanjing.myqcloud.com/avatar.png'} 
-                alt="Robot" 
-              />
-            </div>
-            <div className="answer-info">
+          <div className="message-bot">
+            <img 
+              className="message-bot-avatar" 
+              src={item.from_avatar || 'https://qbot-1251316161.cos.ap-nanjing.myqcloud.com/avatar.png'} 
+              alt="AI Assistant" 
+            />
+            <div className="message-bot-content">
               {item.agent_thought && item.agent_thought.procedures && item.agent_thought.procedures.length > 0 && (
-                <div className="thought-section">
+                <div className="thought-process">
+                  <div className="thought-process-title">思考过程:</div>
                   {item.agent_thought.procedures.map((thought: any, thoughtIndex: number) => (
                     <div key={thoughtIndex} className="thought-item">
-                      <div className="thought-title">{thought.title}</div>
-                      <div className="thought-content">{thought.display_content || thought.debugging?.content}</div>
+                      <div className="thought-item-title">{thought.title}</div>
+                      <div className="thought-item-content">{thought.display_content || thought.debugging?.content}</div>
                     </div>
                   ))}
                 </div>
               )}
               
               {item.loading_message && (
-                <div className="loading">正在思考中</div>
+                <div className="loading-message">
+                  <LoadingSpinner size="25" speed="0.8" className="inline" />
+                  <span>正在思考中</span>
+                </div>
               )}
               
-              <div 
-                className="answer-content"
-                dangerouslySetInnerHTML={{ __html: item.content }}
-              />
+              {item.content && (
+                <div className="message-bot-text">
+                  <MarkdownRenderer content={item.content} />
+                </div>
+              )}
               
               {item.references && item.references.length > 0 && (
                 <ReferenceComponent referencesList={item.references} />
@@ -182,8 +191,7 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
   return (
     <div 
       ref={chatContainerRef}
-      className="client-chat" 
-      style={{ height: chatBoxHeight }}
+      className="chat-messages-container"
     >
       {msgList.map((item, index) => renderMessage(item, index))}
     </div>

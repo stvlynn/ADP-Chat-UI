@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ACCESS_TYPE } from './constants/static';
 import ChatDemo from './pages/chat-demo/ChatDemo';
+import LoadingSpinner from './components/LoadingSpinner';
 import './styles/common.less';
 
 const App: React.FC = () => {
@@ -57,7 +58,12 @@ const App: React.FC = () => {
   }, []);
 
   if (!initialized) {
-    return <div>Loading... Initializing chat interface...</div>;
+    return (
+      <div className="app-loading">
+        <LoadingSpinner size="50" speed="0.7" className="large" />
+        <div className="loading-text">正在初始化聊天界面...</div>
+      </div>
+    );
   }
 
   return (

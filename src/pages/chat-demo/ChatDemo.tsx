@@ -53,26 +53,20 @@ const ChatDemo: React.FC = () => {
   };
 
   return (
-    <div className="client-side-wrap">
-      <div className="header-v2"></div>
-      <div className="client-side-wrap__main main-v2">
-        <div className="client-side-wrap__main-right">
-          <div className="chat-wrap">
-            <div className="chat-wrap__main">
-              <div className="chat-wrap__main-header">
-                <div className="chat-header">
-                  <CommonHeader />
-                </div>
-              </div>
-              <div className="chat-wrap__main-content">
-                <ClientChat onSend={handleSendQuestion} />
-              </div>
-              <div className="chat-wrap__main-footer">
-                <QuestionInput onSend={handleSendQuestion} />
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="chat-container">
+      {/* Header */}
+      <div className="chat-header">
+        <CommonHeader />
+      </div>
+      
+      {/* Chat Messages Area - Takes remaining space */}
+      <div className="chat-messages">
+        <ClientChat onSend={handleSendQuestion} />
+      </div>
+      
+      {/* Input Area - Fixed at bottom */}
+      <div className="input-container">
+        <QuestionInput onSend={handleSendQuestion} />
       </div>
     </div>
   );

@@ -30,25 +30,24 @@ const QuestionInput: React.FC<QuestionInputProps> = ({ onSend }) => {
   };
 
   return (
-    <div className="question-input">
-      <div className="question-input__container">
-        <textarea
-          ref={textareaRef}
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="请输入您的问题..."
-          className="question-input__textarea"
-          rows={1}
-        />
-        <button 
-          onClick={handleSend}
-          disabled={!question.trim()}
-          className="question-input__send-button"
-        >
-          发送
-        </button>
-      </div>
+    <div className="input-wrapper">
+      <textarea
+        ref={textareaRef}
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        onKeyPress={handleKeyPress}
+        placeholder="请输入您的问题..."
+        className="input-field"
+        rows={1}
+      />
+      <button 
+        onClick={handleSend}
+        disabled={!question.trim()}
+        className="send-button"
+        title="发送消息"
+      >
+        <i className="ri-send-plane-fill send-icon"></i>
+      </button>
     </div>
   );
 };

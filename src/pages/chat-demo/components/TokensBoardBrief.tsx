@@ -112,14 +112,15 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
   }
 
   return (
-    <div className="tokens-board-brief">
+    <div className="tokens-display">
       {/* Procedures block (align with Vue tokens-board-brif.vue) */}
       {Array.isArray(tokensData.procedures) && tokensData.procedures.length > 0 && (
-        <div className="tokens-board-brief__procedures">
+        <div className="procedures-section">
+          <div className="procedures-title">运行状态:</div>
           {tokensData.procedures.map((ele: any, idx: number) => (
-            <div className="tokens-board-brief__procedure" key={idx}>
-              <div className="tokens-board-brief__procedure-title">{ele.title}</div>
-              <div className="tokens-board-brief__procedure-content">{ele.content || ele.display_content}</div>
+            <div className="procedure-item" key={idx}>
+              <div className="procedure-title">{ele.title}</div>
+              <div className="procedure-content">{ele.content || ele.display_content}</div>
             </div>
           ))}
         </div>
@@ -127,18 +128,18 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
 
       {/* Token counts: only render if backend provided any count field to avoid showing hardcoded zeros */}
       {hasAnyCount && (
-        <div className="tokens-board-brief__content">
-          <div className="tokens-board-brief__item">
-            <span className="tokens-board-brief__label">总Token:</span>
-            <span className="tokens-board-brief__value">{total_tokens}</span>
+        <div className="tokens-grid">
+          <div className="token-item">
+            <div className="token-label">总Token</div>
+            <div className="token-value">{total_tokens}</div>
           </div>
-          <div className="tokens-board-brief__item">
-            <span className="tokens-board-brief__label">输入:</span>
-            <span className="tokens-board-brief__value">{input_tokens}</span>
+          <div className="token-item">
+            <div className="token-label">输入</div>
+            <div className="token-value">{input_tokens}</div>
           </div>
-          <div className="tokens-board-brief__item">
-            <span className="tokens-board-brief__label">输出:</span>
-            <span className="tokens-board-brief__value">{output_tokens}</span>
+          <div className="token-item">
+            <div className="token-label">输出</div>
+            <div className="token-value">{output_tokens}</div>
           </div>
         </div>
       )}
