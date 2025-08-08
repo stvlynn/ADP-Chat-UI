@@ -11,6 +11,7 @@
 # production
 /build
 # But keep webpack config files for deployment
+!/build/
 !/build/webpack.*.js
 !/build/webpack.base.conf.js
 

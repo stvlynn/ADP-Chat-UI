@@ -10,7 +10,7 @@ const env = dotenv.config({ path: path.join(__dirname, `../config/.env.${process
 const baseWebpackConfig = {
   entry: './src/index.tsx',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, '../dist'),
     filename: 'bundle.js',
     publicPath: '/'
   },
@@ -35,7 +35,8 @@ const baseWebpackConfig = {
                 '@babel/preset-typescript'
               ],
               plugins: [
-                'react-refresh/babel'
+                // Enable React Refresh only in non-production builds
+                ...(process.env.NODE_ENV !== 'production' ? ['react-refresh/babel'] : [])
               ]
             }
           }
@@ -79,7 +80,7 @@ const baseWebpackConfig = {
       patterns: [
         {
           from: path.resolve(__dirname, '../public'),
-          to: path.resolve(__dirname, 'dist'),
+          to: path.resolve(__dirname, '../dist'),
           globOptions: {
             ignore: ['**/index.html']
           }
