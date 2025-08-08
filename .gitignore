@@ -10,6 +10,9 @@
 
 # production
 /build
+# But keep webpack config files for deployment
+!/build/webpack.*.js
+!/build/webpack.base.conf.js
 
 # misc
 .DS_Store
