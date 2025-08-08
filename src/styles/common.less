@@ -525,6 +525,45 @@ a:hover {
   }
 }
 
+// Runtime panel styling
+.runtime-panel {
+  margin: 8px 0;
+  border-radius: 6px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.runtime-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.runtime-arrow {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-right: 6px;
+  transition: transform 0.2s;
+}
+
+.runtime-title {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.runtime-panel-content {
+  padding: 0 12px 12px 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
 // Syntax highlighting overrides
 .hljs {
   background: #f8fafc !important;

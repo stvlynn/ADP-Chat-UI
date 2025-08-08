@@ -35,6 +35,7 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
   const [chatBoxHeight, setChatBoxHeight] = useState('100%');
   const [jsScrolling, setJsScrolling] = useState(false);
   const [userScrolling, setUserScrolling] = useState(false);
+  const [collapsedPanels, setCollapsedPanels] = useState<{[key: string]: boolean}>({});
   const componentId = useRef(`client-chat-${Date.now()}`);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -149,37 +150,58 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
               alt="AI Assistant" 
             />
             <div className="message-bot-content">
-              {item.agent_thought && item.agent_thought.procedures && item.agent_thought.procedures.length > 0 && (
-                <div className="thought-process">
-                  <div className="thought-process-title">思考过程:</div>
-                  {item.agent_thought.procedures.map((thought: any, thoughtIndex: number) => (
-                    <div key={thoughtIndex} className="thought-item">
-                      <div className="thought-item-title">{thought.title}</div>
-                      <div className="thought-item-content">{thought.display_content || thought.debugging?.content}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
               {item.loading_message && (
                 <div className="loading-message">
                   <LoadingSpinner size="25" speed="0.8" className="inline" />
                   <span>正在思考中</span>
                 </div>
               )}
-              
+
               {item.content && (
                 <div className="message-bot-text">
                   <MarkdownRenderer content={item.content} />
                 </div>
               )}
-              
+
+              {(item.tokens_msg || (item.agent_thought && item.agent_thought.procedures && item.agent_thought.procedures.length > 0)) && (
+                <div className="runtime-panel">
+                  <div 
+                    className="runtime-panel-header" 
+                    onClick={() => {
+                      const panelKey = `${item.record_id || item.request_id || index}`;
+                      setCollapsedPanels(prev => ({
+                        ...prev,
+                        [panelKey]: !prev[panelKey]
+                      }));
+                    }}
+                  >
+                    <i className={`ri-arrow-${collapsedPanels[`${item.record_id || item.request_id || index}`] ? 'right' : 'down'}-s-line runtime-arrow`}></i>
+                    <span className="runtime-title">运行状态</span>
+                  </div>
+                  {!collapsedPanels[`${item.record_id || item.request_id || index}`] && (
+                    <div className="runtime-panel-content">
+                      {item.agent_thought && item.agent_thought.procedures && item.agent_thought.procedures.length > 0 && (
+                        <div className="thought-process">
+                          <div className="thought-process-title">思考过程:</div>
+                          {item.agent_thought.procedures.map((thought: any, thoughtIndex: number) => (
+                            <div key={thoughtIndex} className="thought-item">
+                              <div className="thought-item-title">{thought.title}</div>
+                              <div className="thought-item-content">{thought.display_content || thought.debugging?.content}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {item.tokens_msg && (
+                        <TokensBoardBrief tokensData={item.tokens_msg} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {item.references && item.references.length > 0 && (
                 <ReferenceComponent referencesList={item.references} />
-              )}
-              
-              {item.tokens_msg && (
-                <TokensBoardBrief tokensData={item.tokens_msg} />
               )}
             </div>
           </div>

@@ -49,6 +49,48 @@ class ClientData {
     this.listenThought();
   }
 
+  // Try to read initial bot config from various sources (window/localStorage)
+  private readInitialBotInfo(): any | null {
+    try {
+      const w: any = window as any;
+      const fromWindow = w.qbotConfig || w.__QBOT_INIT__ || null;
+      if (fromWindow) {
+        console.log('【clientData】Initial bot config found in window:', fromWindow);
+        return fromWindow;
+      }
+      const fromStorageRaw = localStorage.getItem('qbot_config');
+      if (fromStorageRaw) {
+        const parsed = JSON.parse(fromStorageRaw);
+        console.log('【clientData】Initial bot config found in localStorage:', parsed);
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('【clientData】Failed to read initial bot config:', e);
+    }
+    return null;
+  }
+
+  // Normalize backend payload shapes into UI expected config
+  private normalizeBotInfo(input: any): any | null {
+    if (!input) return null;
+    const src = input.data || input.payload || input;
+    if (!src || typeof src !== 'object') return null;
+
+    const name = src.name || src.bot_name || src.title || '';
+    const avatar = src.avatar || src.avatar_url || src.icon || '';
+    const is_available = typeof src.is_available === 'boolean' ? src.is_available : (src.enable ?? true);
+    const bot_biz_id = src.bot_biz_id || src.biz_id || src.app_id || src.botId || '';
+    const extra = src.extra || {};
+
+    return {
+      name,
+      avatar,
+      is_available,
+      bot_biz_id,
+      ...extra
+    };
+  }
+
   async queryConfigInfo() {
     try {
       const sessionInfo = await this.createSession();
@@ -62,23 +104,20 @@ class ClientData {
         console.error('获取会话ID失败，请重试');
       }
 
-      const botInfo = {
-        code: 0,
-        data: {
-          name: '测试机器人',
-          avatar: 'https://qbot-1251316161.cos.ap-nanjing.myqcloud.com/avatar.png',
-          is_available: true,
-          bot_biz_id: '1664519736704069632'
-        }
+      // Defaults (fallback)
+      const defaultInfo = {
+        name: '测试机器人',
+        avatar: 'https://qbot-1251316161.cos.ap-nanjing.myqcloud.com/avatar.png',
+        is_available: true,
+        bot_biz_id: '1664519736704069632'
       };
 
-      if (botInfo.data) {
-        this.cache.configInfo = botInfo.data;
-        this.cache.configInfo.session_id = sessionInfo.data.session_id;
-        safeEmit('client_configChange', this.cache.configInfo);
-      } else {
-        console.error('获取机器人信息失败，请重试！');
-      }
+      const initial = this.readInitialBotInfo();
+      const normalized = this.normalizeBotInfo(initial) || defaultInfo;
+
+      this.cache.configInfo = { ...normalized, session_id: sessionInfo.data.session_id };
+      console.log('【clientData】Initialized config info:', this.cache.configInfo);
+      safeEmit('client_configChange', this.cache.configInfo);
     } catch (e) {
       console.error('获取会话信息失败，请刷新页面重试！');
     }
