@@ -65,13 +65,18 @@ const baseWebpackConfig = {
     ]
   },
   plugins: [
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify(env || {}),
-      ...Object.entries(env || {}).reduce((acc, [key, value]) => ({
-        ...acc,
-        [`process.env.${key}`]: JSON.stringify(value)
-      }), {})
-    }),
+    // Only expose a safe, whitelisted subset of env vars to the client
+    new webpack.DefinePlugin((() => {
+      const allowedKeys = ['WS_BASE_URL', 'SSE_BASE_URL'];
+      const exposed = {};
+      allowedKeys.forEach((key) => {
+        const val = (process.env && Object.prototype.hasOwnProperty.call(process.env, key))
+          ? process.env[key]
+          : (env ? env[key] : undefined);
+        exposed[`process.env.${key}`] = JSON.stringify(val || '');
+      });
+      return exposed;
+    })()),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, '../public/index.html'),
       filename: 'index.html'
