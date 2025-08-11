@@ -2,7 +2,9 @@
 
 ## 项目简介
 
-本项目是[腾讯云智能体开发平台（Tencent Cloud Agent Development Platform，Tencent Cloud ADP）](https://lke.cloud.tencent.com)的 Chatbot 前端示例应用。它基于 React 构建，提供与腾讯云智能体后端服务的实时聊天交互功能，支持 WebSocket 和 SSE 两种连接方式，具备 Token 管理和 AI 对话能力。
+本项目是[腾讯云智能体开发平台（Tencent Cloud Agent Development Platform，Tencent Cloud ADP）](https://lke.cloud.tencent.com)的第三方 Chatbot 前端。
+
+它基于 React 构建，提供与腾讯云智能体后端服务的实时聊天交互功能，支持 WebSocket 和 SSE 两种连接方式，具备 Token 管理和 AI 对话能力。
 
 腾讯云智能体开发平台（ADP）是基于大模型的智能体构建平台，提供 LLM+RAG、Workflow、Multi-agent 等多种智能体开发框架，助力企业结合专属数据，高效搭建稳定、安全、符合业务需求的智能体应用。
 
@@ -29,6 +31,14 @@
 - `TENCENT_SECRET_KEY`: 你的腾讯云 API 密钥 Key
 - `TENCENT_APP_ID`: 你的腾讯云应用 ID
 
+如何获取？
+
+1. 进入 [API 密钥管理](https://console.cloud.tencent.com/cam/capi)
+2. 新建密钥
+3. 获取 API 密钥 ID 和 API 密钥 Key
+4. 在 [应用管理](https://console.cloud.tencent.com/lke/app) 中创建应用
+5. 进入 [腾讯云智能体平台](https://lke.cloud.tencent.com) -> 应用 -> 应用发布 -> API 管理 -> 复制 AppKey 获取应用 ID
+
 ## 🧪 本地开发与测试
 
 ### 环境准备
@@ -37,8 +47,8 @@
 2. 克隆项目到本地：
 
    ```bash
-   git clone https://github.com/stvlynn/qbot-api-demo.git
-   cd qbot-api-demo/react-app
+   git clone https://github.com/stvlynn/ADP-Chat-UI.git
+   cd ADP-Chat-UI
    ```
 3. 安装依赖：
    ```bash
@@ -47,7 +57,12 @@
 
 ### 配置环境变量
 
-1. 在项目根目录下创建 `.env.local` 文件
+1. 在项目根目录下复制 `.env.local.example` 文件为 `.env.local` 文件
+
+```bash
+cp .env.local.example .env.local
+```
+
 2. 添加以下环境变量：
 
    ```env
