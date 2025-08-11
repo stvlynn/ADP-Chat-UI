@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build for production**: `npm run build`
 - **Run tests**: `npm test`
 - **Validate configuration**: `npm run validate-config`
+- **Start legacy React scripts**: `npm run start:react` (runs on port 3000)
 
 ## Project Architecture
 
@@ -94,15 +95,39 @@ const params = {
 };
 ```
 
+#### Mock Response for Testing:
+The dev server provides mock responses when placeholder credentials are detected:
+```typescript
+// build/webpack.local.conf.js:65-78
+if (config.secretId === 'your-tencent-secret-id-here') {
+  const mockResponse = {
+    Token: 'mock-token-for-testing',
+    ExpireTime: Math.floor(Date.now() / 1000) + 3600
+  };
+}
+```
+
 ### 3. Response Processing
 - **API Response**: Tencent Cloud returns token data via `GetWsToken` API call
 - **Frontend Processing**: `src/App.tsx:28-30` extracts token from response
 - **Global Storage**: Token stored in `window.webimToken` for chat connections
+- **Workflow Metadata**: Chat header title/description extracted from API response and stored in `window.$workflowMeta`
 
 ### 4. Chat Connection Establishment
 - **WebSocket Mode**: Uses `src/manage/utils/Socket.ts` with acquired token
 - **SSE Mode**: Uses `src/manage/sse.ts` (no token required)
 - **Event System**: `src/manage/utils/EventHub.ts` handles component communication
+
+#### WebSocket Connection Flow:
+1. **Token Waiting**: `SocketManager` waits for `window.webimToken` to be available
+2. **Socket Initialization**: Creates Socket.io connection with authentication callback
+3. **Event Handling**: Sets up comprehensive event listeners for connection lifecycle
+4. **Message Processing**: Normalizes payload format (`{payload: {...}}` vs raw data)
+
+#### EventHub Architecture:
+- **Component Registration**: Each component registers with unique ID for cleanup
+- **Event Logging**: Comprehensive console logging for debugging event flow
+- **Cleanup**: Automatic cleanup of component event listeners on unmount
 
 ### 5. Chat Interface Flow
 1. **Component Loading**: `src/pages/chat-demo/ChatDemo.tsx` initializes chat interface
@@ -167,6 +192,22 @@ The application includes comprehensive debug logging for:
 - Token generation and storage
 - Message processing and display
 - Event system activity
+
+## Migration from Vue.js to React
+
+### Key Architecture Changes:
+- **Component Model**: Converted from Vue Options API to React functional components with hooks
+- **State Management**: Replaced Vue reactivity with React hooks + EventHub system
+- **Routing**: Migrated from Vue Router to React Router DOM
+- **Styling**: Maintained Less CSS structure but adapted for React component styling
+- **TypeScript**: Added comprehensive type safety throughout the application
+
+### Preserved Functionality:
+- **WebSocket Integration**: Complete Socket.io connection handling preserved
+- **Event System**: EventHub architecture maintained with enhanced logging
+- **Message Processing**: ClientData message assembly and session management preserved
+- **Token Management**: Server-side token generation via webpack middleware maintained
+- **Dual Connection Support**: Both WebSocket and SSE modes fully functional
 
 ## Security Considerations
 
