@@ -607,6 +607,52 @@ a:hover {
   }
 }
 
+// Option Cards Styling
+.option-cards {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-card-btn {
+  background: linear-gradient(135deg, var(--teal-light) 0%, var(--teal-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, var(--teal-dark) 0%, #0a7a6b 100%);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Bot name styling
+.message-bot-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal-dark);
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
 // App loading screen
 .app-loading {
   display: flex;

@@ -10,6 +10,8 @@ import QuestionInput from './components/QuestionInput';
 const ChatDemo: React.FC = () => {
   const componentId = useRef(`chat-demo-${Date.now()}`);
 
+  const [title, setTitle] = useState<string>('智能助手');
+
   useEffect(() => {
     console.log('【init message connect type------>】', ACCESS_TYPE);
     
@@ -21,13 +23,34 @@ const ChatDemo: React.FC = () => {
 
     eventHub.registerComponent(componentId.current);
 
+    // Initialize title from cached config if available
+    try {
+      const cached = ACCESS_TYPE === 'ws' ? clientData.getConfigInfo?.() : sseManager.getConfigInfo?.();
+      if (cached && (cached.name || cached.title)) {
+        setTitle(cached.name || cached.title);
+      }
+    } catch {}
+
     const handleConfigChange = (res: any) => {
       console.log('Config changed:', res);
+      if (res && (res.name || res.title)) {
+        setTitle(res.name || res.title);
+      }
     };
 
     const handleMsgContentChange = (res: any) => {
       const { chatsContent, type } = res;
       console.log('Message content changed:', type, chatsContent.length);
+      if (Array.isArray(chatsContent)) {
+        // Find last bot message that has from_name
+        for (let i = chatsContent.length - 1; i >= 0; i--) {
+          const m = chatsContent[i];
+          if (!m?.is_from_self && (m?.from_name || m?.bot_name)) {
+            setTitle(m.from_name || m.bot_name);
+            break;
+          }
+        }
+      }
     };
 
     eventHub.on('client_configChange', handleConfigChange);
@@ -56,7 +79,7 @@ const ChatDemo: React.FC = () => {
     <div className="chat-container">
       {/* Header */}
       <div className="chat-header">
-        <CommonHeader />
+        <CommonHeader title={title} />
       </div>
       
       {/* Chat Messages Area - Takes remaining space */}

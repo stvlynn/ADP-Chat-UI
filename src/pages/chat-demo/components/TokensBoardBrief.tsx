@@ -51,7 +51,31 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
   const inputObj: any = (usage as any).input || (usage as any).prompt || undefined;
   const outputObj: any = (usage as any).output || (usage as any).completion || undefined;
 
+  // Prefer counts aggregated from procedures when available
+  const procedures: any[] = Array.isArray(tokensData.procedures) ? tokensData.procedures : [];
+  const procSums = procedures.reduce(
+    (acc, p) => {
+      const pInput = coalesce(
+        (p && (p.input_count ?? p.input_tokens ?? p.prompt_tokens ?? (p.input && p.input.tokens))) as any
+      ) || 0;
+      const pOutput = coalesce(
+        (p && (p.output_count ?? p.output_tokens ?? p.completion_tokens ?? (p.output && p.output.tokens))) as any
+      ) || 0;
+      const pTotal = coalesce(
+        (p && (p.count ?? p.token_count ?? p.total_tokens)) as any,
+        pInput + pOutput
+      ) || 0;
+      acc.input += Number(pInput);
+      acc.output += Number(pOutput);
+      acc.total += Number(pTotal);
+      return acc;
+    },
+    { input: 0, output: 0, total: 0 }
+  );
+
   const total_tokens = coalesce(
+    // 1) Prefer aggregated procedures total if any
+    procedures.length > 0 ? procSums.total : undefined,
     tokensData.total_tokens,
     usage.total_tokens,
     tokensData.totalTokens,
@@ -63,6 +87,8 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
   ) || 0;
 
   const input_tokens = coalesce(
+    // 1) Prefer aggregated procedures input if any
+    procedures.length > 0 ? procSums.input : undefined,
     tokensData.input_tokens,
     usage.input_tokens,
     tokensData.prompt_tokens,
@@ -79,6 +105,8 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
   ) || 0;
 
   const output_tokens = coalesce(
+    // 1) Prefer aggregated procedures output if any
+    procedures.length > 0 ? procSums.output : undefined,
     tokensData.output_tokens,
     usage.output_tokens,
     tokensData.completion_tokens,
@@ -94,13 +122,21 @@ const TokensBoardBrief: React.FC<TokensBoardBriefProps> = ({ tokensData }) => {
     outputObj && outputObj.tokens
   ) || 0;
 
+  const hasProcedureCounts = procedures.some(p =>
+    coalesce(
+      (p && (p.count ?? p.token_count ?? p.total_tokens)) as any,
+      (p && (p.input_count ?? p.input_tokens ?? p.prompt_tokens)) as any,
+      (p && (p.output_count ?? p.output_tokens ?? p.completion_tokens)) as any
+    ) !== undefined
+  );
+
   const hasAnyCount = Boolean(
     coalesce(
       tokensData.total_tokens, usage.total_tokens, tokensData.totalTokens, usage.totalTokens, tokensData.token_count, usage.token_count,
       tokensData.input_tokens, usage.input_tokens, tokensData.prompt_tokens, usage.prompt_tokens, tokensData.inputTokens, tokensData.input_count, usage.input_count,
       tokensData.output_tokens, usage.output_tokens, tokensData.completion_tokens, usage.completion_tokens, tokensData.outputTokens, tokensData.output_count, usage.output_count
     )
-  );
+  ) || hasProcedureCounts;
 
   try {
     // Debug current tokensData and computed values

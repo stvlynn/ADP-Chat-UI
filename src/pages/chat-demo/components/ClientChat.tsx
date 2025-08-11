@@ -20,9 +20,11 @@ interface Message {
   is_loading?: boolean;
   loading_message?: boolean;
   from_avatar?: string;
+  from_name?: string;
   agent_thought?: any;
   references?: any[];
   tokens_msg?: any;
+  option_cards?: Array<string | { text: string } | { label: string; value: string }>;
 }
 
 interface ClientChatProps {
@@ -150,6 +152,9 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
               alt="AI Assistant" 
             />
             <div className="message-bot-content">
+              {item.from_name && (
+                <div className="message-bot-name">{item.from_name}</div>
+              )}
               {item.loading_message && (
                 <div className="loading-message">
                   <LoadingSpinner size="25" speed="0.8" className="inline" />
@@ -202,6 +207,24 @@ const ClientChat: React.FC<ClientChatProps> = ({ onSend }) => {
 
               {item.references && item.references.length > 0 && (
                 <ReferenceComponent referencesList={item.references} />
+              )}
+
+              {Array.isArray(item.option_cards) && item.option_cards.length > 0 && (
+                <div className="option-cards">
+                  {item.option_cards.map((opt: any, i: number) => {
+                    const label = typeof opt === 'string' ? opt : (opt.text || opt.label || opt.value || '');
+                    if (!label) return null;
+                    return (
+                      <button
+                        key={i}
+                        className="option-card-btn"
+                        onClick={() => onSend(label)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </div>

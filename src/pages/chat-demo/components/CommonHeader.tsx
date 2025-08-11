@@ -1,10 +1,18 @@
 import React from 'react';
 
-const CommonHeader: React.FC = () => {
+interface CommonHeaderProps {
+  title?: string;
+  subtitle?: string;
+}
+
+const CommonHeader: React.FC<CommonHeaderProps> = ({
+  title = '智能助手',
+  subtitle = '为您提供智能问答服务'
+}) => {
   return (
     <div>
-      <h1>智能助手</h1>
-      <p>为您提供智能问答服务</p>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
     </div>
   );
 };
