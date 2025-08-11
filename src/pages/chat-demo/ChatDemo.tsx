@@ -11,6 +11,8 @@ const ChatDemo: React.FC = () => {
   const componentId = useRef(`chat-demo-${Date.now()}`);
 
   const [title, setTitle] = useState<string>('智能助手');
+  const [subtitle, setSubtitle] = useState<string>('为您提供智能问答服务');
+  const hasWorkflowMetaRef = useRef(false);
 
   useEffect(() => {
     console.log('【init message connect type------>】', ACCESS_TYPE);
@@ -23,17 +25,25 @@ const ChatDemo: React.FC = () => {
 
     eventHub.registerComponent(componentId.current);
 
-    // Initialize title from cached config if available
+    // Initialize title/subtitle from workflow meta if available; fallback to cached config
     try {
-      const cached = ACCESS_TYPE === 'ws' ? clientData.getConfigInfo?.() : sseManager.getConfigInfo?.();
-      if (cached && (cached.name || cached.title)) {
-        setTitle(cached.name || cached.title);
+      const wf = (window as any).$workflowMeta;
+      if (wf && (wf.name || wf.desc)) {
+        hasWorkflowMetaRef.current = true;
+        if (wf.name) setTitle(wf.name);
+        if (wf.desc) setSubtitle(wf.desc);
+      } else {
+        const cached = ACCESS_TYPE === 'ws' ? clientData.getConfigInfo?.() : sseManager.getConfigInfo?.();
+        if (cached && (cached.name || cached.title)) {
+          setTitle(cached.name || cached.title);
+        }
       }
     } catch {}
 
     const handleConfigChange = (res: any) => {
       console.log('Config changed:', res);
-      if (res && (res.name || res.title)) {
+      // Do not override workflow meta if present
+      if (!hasWorkflowMetaRef.current && res && (res.name || res.title)) {
         setTitle(res.name || res.title);
       }
     };
@@ -41,7 +51,8 @@ const ChatDemo: React.FC = () => {
     const handleMsgContentChange = (res: any) => {
       const { chatsContent, type } = res;
       console.log('Message content changed:', type, chatsContent.length);
-      if (Array.isArray(chatsContent)) {
+      // Keep app header stable when workflow meta is present; avoid switching to latest bot name
+      if (!hasWorkflowMetaRef.current && Array.isArray(chatsContent)) {
         // Find last bot message that has from_name
         for (let i = chatsContent.length - 1; i >= 0; i--) {
           const m = chatsContent[i];
@@ -79,7 +90,7 @@ const ChatDemo: React.FC = () => {
     <div className="chat-container">
       {/* Header */}
       <div className="chat-header">
-        <CommonHeader title={title} />
+        <CommonHeader title={title} subtitle={subtitle} />
       </div>
       
       {/* Chat Messages Area - Takes remaining space */}

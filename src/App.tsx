@@ -19,6 +19,7 @@ const App: React.FC = () => {
       let tokenGet = webIMType.map(type => {
         return new Promise(async (resolve) => {
           let demoToken = '';
+          let workflowMeta: any = undefined;
           if (ACCESS_TYPE === 'ws') {
             try {
               console.log('Fetching token from /getDemoToken...');
@@ -27,6 +28,16 @@ const App: React.FC = () => {
               console.log('Token response:', res);
               if (res && res.data && res.data.apiResponse && res.data.apiResponse.Token) {
                 demoToken = res.data.apiResponse.Token;
+              }
+              // Extract workflow name/desc from apiResponse for header display
+              const api = res && res.data && res.data.apiResponse;
+              if (api) {
+                // Prefer top-level first, then SingleWorkflow object
+                const wfName = api.WorkflowName || (api.SingleWorkflow && api.SingleWorkflow.WorkflowName);
+                const wfDesc = api.WorkflowDesc || (api.SingleWorkflow && api.SingleWorkflow.WorkflowDesc);
+                if (wfName || wfDesc) {
+                  workflowMeta = { name: wfName || '', desc: wfDesc || '' };
+                }
               }
             } catch (error) {
               console.error('获取token失败:', error);
@@ -39,6 +50,13 @@ const App: React.FC = () => {
             access: ACCESS_TYPE
           };
           console.log('【init msg----------demoToken---->】', result);
+          // Store workflow meta on window for downstream components (e.g., ChatDemo header)
+          try {
+            if (workflowMeta) {
+              (window as any).$workflowMeta = workflowMeta;
+              console.log('【init msg----------workflowMeta---->】', (window as any).$workflowMeta);
+            }
+          } catch {}
           resolve(result);
         });
       });
