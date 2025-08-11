@@ -11,6 +11,7 @@
 # production
 /build
 /dist
+/embed-demo.html
 # But keep webpack config files for deployment
 !/build/
 !/build/webpack.*.js
