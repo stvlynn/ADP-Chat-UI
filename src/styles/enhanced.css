@@ -10,9 +10,17 @@
   --teal-dark: #0d9488;
 }
 
+/* Base layout fixes for mobile */
+html, body {
+  height: 100%;
+}
+
 /* Enhanced chat layout styles */
 .chat-container {
-  height: 100vh;
+  /* Use dynamic viewport units to avoid iOS 100vh issues */
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh; /* modern browsers */
+  min-height: -webkit-fill-available; /* iOS Safari fallback */
   display: flex;
   flex-direction: column;
   background-color: var(--cream);
@@ -236,7 +244,12 @@
   flex-shrink: 0;
   background-color: white;
   border-top: 1px solid #e5e7eb;
+  /* Keep input visible without needing to scroll */
+  position: sticky;
+  bottom: 0;
   padding: 16px;
+  /* Respect iOS safe area */
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
 
 .input-wrapper {
@@ -256,7 +269,8 @@
   min-height: 48px;
   max-height: 120px;
   font-family: inherit;
-  font-size: 14px;
+  /* Prevent iOS from zooming on focus */
+  font-size: 16px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }

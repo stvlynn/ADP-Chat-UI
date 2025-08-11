@@ -10,7 +10,9 @@
 
 ## Demo
 
-[![Demo](https://vercel.com/button)](https://adp-chat-ui.vercel.app)
+![2025-08-11 21.36.45.png](https://s2.loli.net/2025/08/11/YGiroLFEOenkyIP.png)
+
+[快速体验](https://adp-chat-ui.vercel.app)
 
 ## 🚀 快速部署
 
@@ -38,6 +40,8 @@
 - `TENCENT_APP_ID`: 你的腾讯云应用 ID
 
 如何获取？
+
+![2025-08-11 21.47.26.png](https://s2.loli.net/2025/08/11/WtLOHNdaE37h62j.png)
 
 1. 进入 [API 密钥管理](https://console.cloud.tencent.com/cam/capi)
 2. 新建密钥
@@ -100,7 +104,7 @@
 - 若目标站点使用严格的 CSP，请为 `script-src`/`frame-src` 增加你的部署域名（例如 `https://adp-chat-ui.vercel.app`）。
 - 高级联动（如页面与聊天窗的双向通信）可通过 `postMessage` 实现，当前示例未内置该协议。
 
-#### 方式三：一行脚本（推荐，类似 Dify）
+#### 方式三：一行脚本（推荐）
 
 本仓库已在 `public/` 提供优化的 `embed.min.js`，部署后可通过一行脚本接入。特性包括：
 
