@@ -100,25 +100,40 @@
 - 若目标站点使用严格的 CSP，请为 `script-src`/`frame-src` 增加你的部署域名（例如 `https://adp-chat-ui.vercel.app`）。
 - 高级联动（如页面与聊天窗的双向通信）可通过 `postMessage` 实现，当前示例未内置该协议。
 
-#### 方式三：一行脚本（由 Chatbot 侧提供的 embed.js）
+#### 方式三：一行脚本（推荐，类似 Dify）
 
-本仓库已在 `public/` 提供 `embed.min.js`，部署后可通过 `https://你的部署域名/embed.min.js` 一行脚本接入。它会自动渲染右下角气泡按钮，并可最小化/展开聊天窗。
+本仓库已在 `public/` 提供优化的 `embed.min.js`，部署后可通过一行脚本接入。特性包括：
 
-最小示例：
+- 🎨 **与主应用配色一致**：使用 teal 色系 (#0d9488)
+- ✨ **流畅动画效果**：展开/收起带 0.2s 缓动动画
+- 🎯 **优化图标设计**：28x28 像素清晰聊天图标
+- 🧹 **简洁界面**：无冗余标题，专注聊天体验
+- 💾 **状态记忆**：localStorage 保存展开/最小化状态
+
+**最简接入（推荐）：**
 
 ```html
 <script>
   window.adpChatbotConfig = {
-    // 可省略 baseUrl：默认取当前脚本的域名
-    baseUrl: 'https://adp-chat-ui.vercel.app', // 建议显式设置为你的部署域名
-    width: 380,
-    height: 600,
-    right: 24,
-    bottom: 24,
-    bubbleColor: '#1C64F2',
-    iframePath: '/', // 默认加载首页，如有专用聊天路由可替换
-    allow: 'clipboard-write *; microphone; camera',
-    title: '智能体助手'
+    baseUrl: 'https://adp-chat-ui.vercel.app' // 替换为你的部署域名
+  };
+</script>
+<script src="https://adp-chat-ui.vercel.app/embed.min.js" defer></script>
+```
+
+**完整配置示例：**
+
+```html
+<script>
+  window.adpChatbotConfig = {
+    baseUrl: 'https://adp-chat-ui.vercel.app', // 你的部署域名
+    width: 380,           // 聊天窗宽度
+    height: 600,          // 聊天窗高度
+    right: 24,            // 距离右边距离
+    bottom: 24,           // 距离底部距离
+    bubbleColor: '#0d9488', // 气泡按钮颜色（默认 teal 色）
+    iframePath: '/',      // 聊天页面路径
+    allow: 'clipboard-write *; microphone; camera' // iframe 权限
   };
 </script>
 <script src="https://adp-chat-ui.vercel.app/embed.min.js" defer></script>
@@ -133,11 +148,30 @@ window.ADPChatbot.close();  // 最小化
 window.ADPChatbot.toggle(); // 切换
 ```
 
-说明：
+**可选样式自定义：**
 
-- `embed.min.js` 会尝试从其自身 `src` 的域名推断 `baseUrl`，如部署到 CDN 或子域，建议显式传入 `baseUrl`。
-- 聊天 iframe 地址由 `baseUrl + iframePath` 组合，默认指向首页。
-- 状态在 `localStorage` 中保存，刷新后保持展开/最小化状态。
+```html
+<style>
+  /* 自定义气泡按钮颜色 */
+  [data-adp-chatbot="bubble"] {
+    background-color: #your-color !important;
+  }
+  
+  /* 自定义聊天窗尺寸 */
+  [data-adp-chatbot="wrap"] {
+    width: 400px !important;
+    height: 650px !important;
+  }
+</style>
+```
+
+**说明：**
+
+- 🔧 **智能配置**：`baseUrl` 可省略，脚本会自动从 `src` 域名推断
+- 🎯 **灵活定位**：通过 `right`、`bottom` 调整气泡按钮位置
+- 💾 **状态持久化**：展开/最小化状态自动保存到 localStorage
+- 🎨 **主题一致**：默认使用与主应用相同的 teal 配色方案
+- ✨ **动画流畅**：内置 0.2s 缓动动画，提升用户体验
 
 ## 🧪 本地开发与测试
 

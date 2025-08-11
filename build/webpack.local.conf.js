@@ -39,6 +39,27 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }));
       });
 
+      // Serve embed.min.js with proper headers
+      devServer.app.get('/embed.min.js', (req, res) => {
+        const fs = require('fs');
+        const embedPath = path.join(__dirname, '../public/embed.min.js');
+        
+        try {
+          const embedContent = fs.readFileSync(embedPath, 'utf8');
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.end(embedContent);
+        } catch (error) {
+          console.error('Error serving embed.min.js:', error);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end('Error loading embed script');
+        }
+      });
+
       // 添加获取token的API路由
       devServer.app.get('/getDemoToken', async (req, res) => {
         try {
