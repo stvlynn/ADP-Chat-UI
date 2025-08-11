@@ -10,6 +10,7 @@
 
 # production
 /build
+/dist
 # But keep webpack config files for deployment
 !/build/
 !/build/webpack.*.js
