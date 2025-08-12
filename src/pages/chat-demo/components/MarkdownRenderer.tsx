@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
@@ -14,9 +14,84 @@ let mermaidInitialized = false;
 // Mermaid component for rendering diagrams
 const MermaidDiagram: React.FC<{ chart: string; id: string }> = ({ chart, id }) => {
   const elementRef = useRef<HTMLDivElement>(null);
+  const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const renderDiagram = async () => {
+  // Helper function to clean and validate mermaid chart content
+  const cleanMermaidChart = (rawChart: string): string => {
+    // Remove any leading/trailing whitespace
+    let cleanChart = rawChart.trim();
+    
+    if (!cleanChart || cleanChart.length < 3) {
+      throw new Error('Empty or invalid mermaid diagram');
+    }
+
+    // Fix common streaming issues:
+    // 1. Ensure the chart starts with a valid mermaid diagram type
+    const validStarts = [
+      'graph', 'flowchart', 'sequenceDiagram', 'gantt', 
+      'classDiagram', 'stateDiagram', 'pie', 'erDiagram', 
+      'journey', 'requirementDiagram', 'gitGraph'
+    ];
+    
+    const hasValidStart = validStarts.some(start => cleanChart.startsWith(start));
+    
+    if (!hasValidStart) {
+      // Try to detect diagram type based on content patterns
+      if (cleanChart.includes('->') || cleanChart.includes('-->') || cleanChart.includes('==>')) {
+        cleanChart = 'flowchart TD\n' + cleanChart;
+      } else if (
+        (cleanChart.includes('participant') && cleanChart.includes(':')) ||
+        (cleanChart.includes('actor') && cleanChart.includes(':'))
+      ) {
+        cleanChart = 'sequenceDiagram\n' + cleanChart;
+      } else {
+        // Default to flowchart if we can't determine the type
+        cleanChart = 'flowchart TD\n' + cleanChart;
+      }
+    }
+
+    // 2. Fix common syntax issues in streaming content
+    const lines = cleanChart.split('\n');
+    const fixedLines = lines.map(line => {
+      // Fix missing semicolons in style declarations
+      if (line.includes('style ') && !line.includes('fill:') && !line.includes('stroke:')) {
+        return line + ' fill:#ffffff,stroke:#000000';
+      }
+      return line;
+    });
+    
+    // 3. Remove incomplete lines that end with operators
+    const validLines = fixedLines.filter(line => {
+      // Allow empty lines and comment lines
+      if (line.trim() === '' || line.trim().startsWith('%%')) {
+        return true;
+      }
+      
+      // Remove lines that likely end mid-statement
+      const incompleteEndings = [
+        /->\s*$/,     // Ends with arrow
+        /-->\s*$/,    // Ends with thick arrow
+        /==>\s*$/,    // Ends with bold arrow
+        /-\s*$/,      // Ends with dash
+        /\+\s*$/,     // Ends with plus
+        /\|\s*$/,     // Ends with pipe
+      ];
+      
+      return !incompleteEndings.some(pattern => pattern.test(line));
+    });
+    
+    return validLines.join('\n');
+  };
+
+  // Debounced render function to prevent excessive re-renders during streaming
+  const debouncedRender = useCallback((chartContent: string) => {
+    // Clear any existing timeout
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
+    }
+
+    // Set a new timeout to render the diagram
+    renderTimeoutRef.current = setTimeout(async () => {
       if (!elementRef.current) return;
 
       try {
@@ -44,13 +119,8 @@ const MermaidDiagram: React.FC<{ chart: string; id: string }> = ({ chart, id }) 
         }
 
         // Clean the chart content to avoid syntax issues
-        const cleanChart = chart.trim();
+        const cleanChart = cleanMermaidChart(chartContent);
         
-        // Validate basic mermaid syntax
-        if (!cleanChart || cleanChart.length < 3) {
-          throw new Error('Empty or invalid mermaid diagram');
-        }
-
         // Generate unique ID for this render
         const uniqueId = `mermaid-${id}-${Date.now()}`;
         
@@ -68,14 +138,25 @@ const MermaidDiagram: React.FC<{ chart: string; id: string }> = ({ chart, id }) 
             <div class="mermaid-error">
               <strong>图表渲染失败</strong><br/>
               <small>请检查图表语法是否正确</small>
+              <div style="margin-top: 8px; font-size: 10px; color: #666;">${error.message}</div>
             </div>
           `;
         }
       }
-    };
+    }, 300); // 300ms debounce delay
+  }, [id]);
 
-    renderDiagram();
-  }, [chart, id]);
+  useEffect(() => {
+    // Trigger debounced render
+    debouncedRender(chart);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
+    };
+  }, [chart, debouncedRender]);
 
   return <div ref={elementRef} className="mermaid-diagram" />;
 };
